@@ -14,10 +14,13 @@ contract ExchangeDeployment is Script {
     /// @param ctf          - The CTF address
     /// @param proxyFactory - The Polymarket proxy factory address
     /// @param safeFactory  - The Polymarket Gnosis Safe factory address
-    function deployExchange(address admin, address collateral, address ctf, address proxyFactory, address safeFactory)
-        public
-        returns (address exchange)
-    {
+    function deployExchange(
+        address admin,
+        address collateral,
+        address ctf,
+        address proxyFactory,
+        address safeFactory
+    ) public returns (address exchange) {
         vm.startBroadcast();
 
         CTFExchange exch = new CTFExchange(collateral, ctf, proxyFactory, safeFactory);
@@ -27,8 +30,10 @@ contract ExchangeDeployment is Script {
         exch.addOperator(admin);
 
         // Revoke the deployer's authorization
-        exch.renounceAdminRole();
-        exch.renounceOperatorRole();
+        if (msg.sender != admin) {
+            exch.renounceAdminRole();
+            exch.renounceOperatorRole();
+        }
 
         exchange = address(exch);
     }
